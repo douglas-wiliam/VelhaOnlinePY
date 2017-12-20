@@ -17,16 +17,7 @@ class conexao:
     def mandaMsg(self,msg):
         self.tcp.send(bytes(msg, 'utf-8'))
 
-"""    
-msg = input()
-tcp.send(bytes(msg, 'utf-8'))
-msg = input()
-"""
-"""
-img = './Assets/X.png'
-Tela = iniciaGUI(img)
-Tela.run()
-tcp.close()"""
+
 
 
 
