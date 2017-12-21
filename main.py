@@ -1,26 +1,26 @@
 #Servidor Mutltithread
 import socket
 from threading import Thread
-from socketserver import ThreadingMixIn
 
 #Pool
 class ClientThread(Thread):
 
-	def __init__(self, ip, port, jogadorID):
+	def __init__(self, ip, port, con, jogadorID):
 		Thread.__init__(self)
 		self.ip = ip
 		self.port = port
+		self.con = con
 		self.jogadorID = jogadorID
 		print('[+] Jogador Conectou ', ip, ' ', port)
 	
 	def run(self):
 		while True:
 			try:
-				msg = con.recv(1024)
+				msg = self.con.recv(1024)
 				if not(msg): break
 				text = msg.decode("utf-8")
 				print(text, 'Jogador ', self.jogadorID)
-				con.send(bytes(self.jogadorID))
+				self.con.send(bytes(self.jogadorID))
 			except (ConnectionResetError, BrokenPipeError):
 				break
 		print('[-] Jogador Desconectou' , self.ip, ' ', self.port)
@@ -41,7 +41,7 @@ while True:
 		tcp.listen(4)
 		print('Esperado por jogadores...')
 		(con, (ip,  port)) = tcp.accept()
-		newthread = ClientThread(ip, port, contJogador)
+		newthread = ClientThread(ip, port, con, contJogador)
 		contJogador = contJogador+1
 		newthread.start()
 		threads.append(newthread)
