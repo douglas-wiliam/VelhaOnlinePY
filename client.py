@@ -7,6 +7,7 @@ class conexao:
 		self.HOST = '127.0.0.1'
 		self.PORT = 5001
 		self.tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.dest = (self.HOST, self.PORT)
 	
 	def conectar(self):
