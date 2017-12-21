@@ -11,7 +11,8 @@ class ClientThread(Thread):
 		self.port = port
 		self.con = con
 		self.jogadorID = jogadorID
-		print('[+] Jogador Conectou ', ip, ' ', port)
+		self.con.send(bytes(self.jogadorID))
+		print('[+] Jogador Conectou ', ip, ' ', port, ' ', jogadorID)
 	
 	def run(self):
 		while True:
@@ -20,7 +21,6 @@ class ClientThread(Thread):
 				if not(msg): break
 				text = msg.decode("utf-8")
 				print(text, 'Jogador ', self.jogadorID)
-				self.con.send(bytes(self.jogadorID))
 			except (ConnectionResetError, BrokenPipeError):
 				break
 		print('[-] Jogador Desconectou' , self.ip, ' ', self.port)
