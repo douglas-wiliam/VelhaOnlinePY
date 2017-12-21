@@ -11,8 +11,7 @@ class ClientThread(Thread):
 		self.port = port
 		self.con = con
 		self.jogadorID = jogadorID
-		self.con.send(bytes(self.jogadorID))
-		print('[+] Jogador Conectou ', ip, ' ', port, ' ', jogadorID)
+		print('[+] Jogador Conectou ', ip, ' ', port)
 	
 	def run(self):
 		while True:
@@ -21,6 +20,7 @@ class ClientThread(Thread):
 				if not(msg): break
 				text = msg.decode("utf-8")
 				print(text, 'Jogador ', self.jogadorID)
+				self.con.send(bytes(self.jogadorID))
 			except (ConnectionResetError, BrokenPipeError):
 				break
 		print('[-] Jogador Desconectou' , self.ip, ' ', self.port)
@@ -36,17 +36,30 @@ tcp.bind(orig)
 threads = []
 contJogador = 1;
 
-while True:
-	try:
-		tcp.listen(4)
-		print('Esperado por jogadores...')
-		(con, (ip,  port)) = tcp.accept()
-		newthread = ClientThread(ip, port, con, contJogador)
-		contJogador = contJogador+1
-		newthread.start()
-		threads.append(newthread)
-		
-	except KeyboardInterrupt:
-		tcp.close()
-		break
+try:
+    tcp.listen(4)
+    print('Esperado por jogador...')
+    (con, (ip,  port)) = tcp.accept()
+    jogadorX = ClientThread(ip, port, con, contJogador)
+    contJogador = contJogador+1
+    #jogadorX.start()
+    jogadorX.con.send(bytes('X','utf-8'))
+    
+    tcp.listen(4)
+    print('Esperado por segundo jogador...')
+    (con, (ip,  port)) = tcp.accept()
+    jogadorO = ClientThread(ip, port, con, contJogador)
+    contJogador = contJogador+1
+    #jogadorO.start()
+    jogadorO.con.send(bytes('O','utf-8'))
+    
+    while True:
+        msg = jogadorX.con.recv(1024).decode("utf-8")
+        jogadorO.con.send(bytes(msg,'utf-8'))
+        msg = jogadorO.con.recv(1024).decode("utf-8")
+        jogadorX.con.send(bytes(msg,'utf-8'))
+        
+except KeyboardInterrupt:
+    tcp.close()
+    
 	

@@ -5,37 +5,34 @@ con = client.conexao()
 
 class botaoJogo:
             def acao(self):
-                if self.imagem == self.imgEmpty:
-                    self.imagem = self.imgSet
-                    self.estado = True
-                    con.mandaMsg(self.posicao)
-                    self.b.config(image=self.imagem, width="60",height="60")
+                if Tela.unlock == True:
+                    if self.imagem == self.imgEmpty:
+                        self.imagem = Tela.imgSet
+                        self.b.config(image=self.imagem, width="60",height="60")
+                        con.mandaMsg(self.posicao)
+                        Tela.unlock = False
+                        msg = con.recebeMsg()
+                        Tela.botoes[msg].b.config(image=Tela.imgEnemy, width="60",height="60")
+                        Tela.unlock = True
 
-            def __init__(self,master,imgSet,pos):
+            def __init__(self,master,pos):
                 self.estado = False
                 self.posicao = pos
                 self.imgEmpty = PhotoImage(file='./Assets/empty.png')
-                self.imgSet = imgSet
                 self.imagem = self.imgEmpty
                 self.master = master
                 self.b = Button(self.master, command=self.acao)
                 self.b.config(image=self.imagem, width="60",height="60")
-
+                
 
 class iniciaGUI:
-    def conectar(self):
-        valor = con.conectar()
-        if valor:
-            self.conState = "Conectado"
-            self.conStateLabel.config(fg="green", text=self.conState)
-        else:
-            self.conState = "Não conectado"
-            self.conStateLabel.config(fg="red", text=self.conState)
     
-    def __init__(self,imgSet):
+    def __init__(self):
         self.base = Tk()
-        self.imgSet = PhotoImage(file=imgSet)
+        self.unlock = False
         self.imgEmpty = PhotoImage(file='./Assets/empty.png')
+        self.imgSet = None
+        self.imgEnemy = None
         self.title = PanedWindow(orient=VERTICAL, bd="10px")
         self.text = Label(self.title, font=("Arial Bold", 16), text="JOGO DA VELHA")
         self.conState = "Aguardando conexão..."
@@ -47,12 +44,13 @@ class iniciaGUI:
         for l in linhas:
             for c in colunas:
                 key = str(l)+str(c)
-                self.botoes.setdefault(key,botaoJogo(self.Board,self.imgSet,key))
-        self.conectar()
+                self.botoes.setdefault(key,botaoJogo(self.Board,key))
+        self.btCon = botaoCon(self.title)
 
     def run(self):
         self.text.pack()
         self.conStateLabel.pack()
+        self.btCon.b.pack()
         self.title.pack()
         self.botoes['TR'].b.grid(row=0, column=0)
         self.botoes['TC'].b.grid(row=0, column=1)
@@ -64,9 +62,41 @@ class iniciaGUI:
         self.botoes['BC'].b.grid(row=2, column=1)
         self.botoes['BL'].b.grid(row=2, column=2)
         self.Board.pack()
+        
         self.base.mainloop()
         
+
+class botaoCon:
+    def acao(self):
+        valor = con.conectar()
+        if valor:
+            msg = con.recebeMsg()
+            if msg == "O":
+                Tela.conState = "Conectado como O"
+                Tela.conStateLabel.config(fg="green", text=Tela.conState)
+                Tela.imgSet = PhotoImage(file='./Assets/O.png')
+                Tela.imgEnemy = PhotoImage(file='./Assets/X.png')
+                msg = con.recebeMsg()
+                Tela.botoes[msg].b.config(image=Tela.imgEnemy, width="60",height="60")
+                Tela.unlock=True
+            
+            if msg == "X":
+                Tela.conState = "Conectado como X"
+                Tela.conStateLabel.config(fg="green", text=Tela.conState)
+                Tela.imgSet = PhotoImage(file='./Assets/X.png')
+                Tela.imgEnemy = PhotoImage(file='./Assets/O.png')
+                Tela.unlock=True
+        else:
+            Tela.conState = "Não conectado"
+            Tela.conStateLabel.config(fg="red", text=Tela.conState)
+            
+
+    def __init__(self,master):
+            self.master = master
+            self.b = Button(self.master, command=self.acao)
+            self.b.config(text="Conectar", width="10",height="1")
         
-img = './Assets/X.png'
-Tela = iniciaGUI(img)
+        
+
+Tela = iniciaGUI()
 Tela.run()

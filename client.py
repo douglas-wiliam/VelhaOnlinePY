@@ -9,7 +9,7 @@ class conexao:
 		self.tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.dest = (self.HOST, self.PORT)
-	
+
 	def conectar(self):
 		try:
 			self.tcp.connect(self.dest)
@@ -19,9 +19,11 @@ class conexao:
 
 	def mandaMsg(self, msg):
 		self.tcp.send(bytes(msg, 'utf-8'))
-	
+
 	def recebeMsg(self):
-		msg =  self.tcp.recv(1024)
+		msg = self.tcp.recv(1024)
+		msg = msg.decode("utf-8")
+		return msg
 
 
 
